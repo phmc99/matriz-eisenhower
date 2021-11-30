@@ -10,4 +10,4 @@ def init_app(app: Flask):
     from app.models.category import Category
     from app.models.eisenhower import Eisenhower
     from app.models.task import Task
-    from app.models.task_category import Task_Category
+    from app.models.task_category import task_category

@@ -44,6 +44,7 @@ def eisenhower(i, u):
         return eisenhower.id
 
 def create_task():
+    session = current_app.db.session
     try:
         data = request.get_json()
         if data["importance"] > 2 or data["importance"] < 1:
@@ -57,8 +58,6 @@ def create_task():
         columns = ["name", "description", "duration", "importance", "urgency", "eisenhower_id"]
         valid_data = {k: data[k] for k in data if k in columns}
         new_task = Task(**valid_data)
-        current_app.db.session.add(new_task)
-        current_app.db.session.commit()
 
         categories = []
         for c in data["categories"]:
@@ -74,12 +73,16 @@ def create_task():
                     "name": c["name"],
                     "description": data["description"]
                     })
-                current_app.db.session.add(new_category)
-                current_app.db.session.commit()
+                session.add(new_category)
+                session.commit()
+                new_category.tasks.append(new_task)
                 categories.append({"name": new_category.name})
             else:
+                category.tasks.append(new_task)
                 categories.append({"name": category.name})
 
+        session.add(new_task)
+        session.commit()
 
         return {
             "id": new_task.id,
