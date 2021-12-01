@@ -101,6 +101,10 @@ def update_task(task_id):
     data = request.get_json()
 
     task = Task.query.get(task_id)
+    
+    if data["importance"] != None and data["urgency"] != None:
+        eisenhower_id = eisenhower(data["importance"], data["urgency"])
+        data["eisenhower_id"] = eisenhower_id
 
     if task == None:
         return {"message": "task not found"}, 404

@@ -19,19 +19,20 @@ def get_all():
             "description": query[i][0].description,
             "tasks": []
         }
+        if not category["name"] in aux:
+            aux.append(category["name"])
+            result.append(category)
+        
 
+    for i in range(len(query)):
+        item_id = query[i][0].id
+        category = list(filter(lambda item: item["id"] == item_id, result))
         task = {
             "id": query[i][1].id,
             "name": query[i][1].name,
             "description": query[i][1].description,
             "priority": query[i][1].eisenhower.type
         }
-
-        if not category["name"] in aux:
-            aux.append(category["name"])
-            result.append(category)
-            category["tasks"].append(task)
-        
-        category["tasks"].append(task)
+        category[0]["tasks"].append(task)
 
     return {"data": result}, 200
