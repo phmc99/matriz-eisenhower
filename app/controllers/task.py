@@ -98,30 +98,41 @@ def create_task():
         return {"message": e.message}, 409
 
 def update_task(task_id):
-    data = request.get_json()
+    try:
+        data = request.get_json()
+        keys = data.keys()
 
-    task = Task.query.get(task_id)
-    
-    if data["importance"] != None and data["urgency"] != None:
-        eisenhower_id = eisenhower(data["importance"], data["urgency"])
-        data["eisenhower_id"] = eisenhower_id
+        task = Task.query.get(task_id)
 
-    if task == None:
-        return {"message": "task not found"}, 404
+        if "importance" in keys and "urgency" in keys:
+            eisenhower_id = eisenhower(data["importance"], data["urgency"])
+            data["eisenhower_id"] = eisenhower_id
+        elif "importance" in keys:
+            eisenhower_id = eisenhower(data["importance"], task.urgency)
+            data["eisenhower_id"] = eisenhower_id
+        elif "urgency" in keys:
+            eisenhower_id = eisenhower(task.importance, data["urgency"])
+            data["eisenhower_id"] = eisenhower_id
 
-    for k, v in data.items():
-        setattr(task, k, v)
+        if task == None:
+            return {"message": "task not found"}, 404
 
-    current_app.db.session.add(task)
-    current_app.db.session.commit()
+        for k, v in data.items():
+            setattr(task, k, v)
 
-    return {
-            "id": task.id,
-            "name": task.name,
-            "description": task.description,
-            "duration": task.duration,
-            "eisenhower": (Eisenhower.query.get(task.eisenhower_id).type)
-        }
+        current_app.db.session.add(task)
+        current_app.db.session.commit()
+
+        return {
+                "id": task.id,
+                "name": task.name,
+                "description": task.description,
+                "duration": task.duration,
+                "eisenhower": (Eisenhower.query.get(task.eisenhower_id).type)
+            }
+    except KeyError:
+        return {"message": "key error"}, 400
+
 
 def delete_task(task_id):
     task = Task.query.get(task_id)
